@@ -1,5 +1,4 @@
-""" Start on part 3.2, 
-and work on installing modules for next time"""
+"""Start on 4.1 B for next time."""
 
 from console import fg
 from console import bg
@@ -47,34 +46,43 @@ PLACES = {
 ITEMS = {
     "potion": {
         "key": "potion",
-        "name": 'battle potion',
-        "description": "boils the blood of one's enemies",
+        "name": 'Battle Potion',
+        "description": "A potion which boils the blood of one's enemies",
         "price": -10,
     },
     "sword": {
         "key": "sword",
-        "name": "battle sword",
-         "description": "super sharp killing machine",
+        "name": "Battle Sword",
+         "description": "A super sharp killing machine",
          "price": -11,
     },
     "pillow": {
          "key": "pillow",
-         "name": "plush pillow",
-         "description": "soft pillow for sleepy time",
+         "name": "Plush Pillow",
+         "description": "A soft pillow for sleepy time",
          "price": -5,
+    },
+    "desk" : {
+        "key": "desk" ,
+        "name": "Desk" ,
+        "description": "A wooden desk with a large leather-bound book open on its surface" ,
+    },
+    "book": {
+        "key": "book" ,
+        "name": "Book" ,
+        "description": "A leather-bound book open to an interesting passage..." ,
     },
 }
 
 def do_shop():
     """ To shop """
-    print("Items for sale.")
+    header(f'{fg.blue("Items for Sale!")}')
     for item in ITEMS.values():
-        print("item:" , item["name"])
-        print("description:" , item["description"])
+        write(f"{item['name']}: {item['description']}")
     
 def do_quit():
     """ To exit the game """
-    print("Goodbye.")
+    write("Goodbye.")
     quit()
 
 def do_go(args):
@@ -106,7 +114,7 @@ def do_go(args):
 
     PLAYER['place'] = new_name
 
-    wrap(new_place['name'])
+    header(new_place['name'])
     wrap(new_place['description'])
 
 def main():
@@ -139,7 +147,7 @@ def debug(message):
         print("DEBUG: ", message)
 
 def error(message):
-    print("Error: ", message)
+    print(f"{fg.red('Error: ')} {message}")
 
 def wrap(text):
     paragraph = textwrap.fill(
@@ -149,6 +157,14 @@ def wrap(text):
         subsequent_indent = MARGIN,
     )
     print(paragraph)
+
+def write(text):
+    print(MARGIN, text)
+
+def header(title):
+    print()
+    write(f"{fx.bold(title)}")
+    print()
 
 if __name__ == "__main__":
     main()
