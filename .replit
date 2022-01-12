@@ -1,1 +1,1 @@
-run = "python function_review.py"
+run = "python adventure_game.py"

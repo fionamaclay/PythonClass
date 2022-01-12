@@ -1,4 +1,4 @@
-"""Start on 4.1 B for next time."""
+"""Start on 5.4 for next time."""
 
 from console import fg
 from console import bg
@@ -34,6 +34,7 @@ PLACES = {
         "name": "Your cottage" ,
         "east": "town-square" ,
         "description": "Your humble bode and an ideal place to rest after tiresome adventures." ,
+        "items": ["book" , "desk"] ,
     },
     "town-square": {
         "key": "town-square" ,
@@ -75,9 +76,11 @@ ITEMS = {
 }
 
 def do_shop():
-    """ To shop """
+    """ To list items for sale """
     header(f'{fg.blue("Items for Sale!")}')
     for item in ITEMS.values():
+        if "price" not in item:
+            continue
         write(f"{item['name']}: {item['description']}")
     
 def do_quit():
@@ -117,6 +120,57 @@ def do_go(args):
     header(new_place['name'])
     wrap(new_place['description'])
 
+def do_examine(args):
+    """ To examine an object """
+    debug(f"Trying to examine: {args}")
+    if not args:
+        error("What do you want to examine?")
+        return
+    
+    place_name = PLAYER['place']
+    place = PLACES[place_name]
+
+    name = args[0].lower()
+
+    if name not in place.get("items", []):
+        error(f"Sorry, I don't know what {name} is.")
+        return
+    elif name not in ITEMS:
+        error(f"Whoops! The information about {name} seems to be missing.")
+        return
+
+    item = ITEMS[name]
+
+    header(item["name"])
+    wrap(item["description"])
+
+
+def do_look():
+    """ To look around your current location"""
+    debug("Trying to look around.")
+
+    place_name = PLAYER["place"]
+    place = PLACES[place_name]
+
+    header(place["name"])
+    wrap(place["description"])
+
+    items = place.get("items", [])
+
+    if items:
+        names = []
+        for key in items:
+            item = ITEMS.get(key)
+            names.append(item["name"])
+        last = names.pop()
+        text = ", ".join(names)
+        if text:
+            text = text + " and " + last
+        
+        print()
+        write(f"You see {text}.")
+            
+
 def main():
     print("Welcome!")
     while True:
@@ -138,10 +192,14 @@ def main():
             do_shop()
         elif command == "g" or command == "go":
             do_go(args)
+        elif command == "x" or command == "exam" or command == "examine":
+            do_examine(args)
+        elif command == "l" or command == "look":
+            do_look()
         else:
             error("No such command.")
             continue
-      
+        
 def debug(message):
     if DEBUG:
         print("DEBUG: ", message)
