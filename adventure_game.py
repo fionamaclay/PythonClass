@@ -1,4 +1,4 @@
-"""Start on 5.4 for next time."""
+"""Start on 8.1 for next time."""
 
 from console import fg
 from console import bg
@@ -26,6 +26,7 @@ DEBUG = False
 
 PLAYER = {
     "place": "home" ,
+    "inventory": {} ,
 }
 
 PLACES = {
@@ -72,6 +73,7 @@ ITEMS = {
         "key": "book" ,
         "name": "Book" ,
         "description": "A leather-bound book open to an interesting passage..." ,
+        "can_take": True ,
     },
 }
 
@@ -132,7 +134,7 @@ def do_examine(args):
 
     name = args[0].lower()
 
-    if name not in place.get("items", []):
+    if name not in place.get("items", []) and name not in PLAYER["inventory"]:
         error(f"Sorry, I don't know what {name} is.")
         return
     elif name not in ITEMS:
@@ -143,6 +145,7 @@ def do_examine(args):
 
     header(item["name"])
     wrap(item["description"])
+
 
 
 def do_look():
@@ -169,7 +172,63 @@ def do_look():
         
         print()
         write(f"You see {text}.")
-            
+    
+    print()
+    
+    for direction in ("north" , "south" , "east" , "west"):
+        name = place.get(direction)
+        if not name:
+            continue
+        destination = PLACES.get(name)
+        write(f"To the {direction} is {destination['name']}.")
+
+def do_take(args):
+    """To take an item from your current location"""
+    debug(f"Trying to take {args}.")
+    
+    if not args:
+        error("Which way do you want to go?")
+        return
+
+    place_name = PLAYER.get("place")
+    place = PLACES.get(place_name)
+
+    name = args[0].lower()
+
+    if name not in place.get("items" , []):
+        error(f"Sorry, I don't see a {name} here.")
+        return
+
+    item = ITEMS.get(name)
+
+    if not item:
+        error(f"Whoops! The information about {name} seems to be missing.")
+        return
+
+    if not item.get('can_take'):
+        wrap(f"You try to pick up {item['name']}, but you find your muscles to be too feeble to lift it!")
+        return
+    
+    PLAYER["inventory"].setdefault(name , 0)
+    PLAYER["inventory"][name] + 1
+    place["items"].remove(name)
+
+    wrap(f"You pick up {item['name']} and put it in your pack.")
+
+def do_inventory():
+    debug("Trying to show inventory...")
+    header("INVENTORY")
+
+    if not PLAYER["inventory"]:
+        write("Empty.")
+        return
+
+    for name , qty in PLAYER["inventory"].items():
+        item = ITEMS.get(name)
+        write(f"{item['name']}: {qty}")
+        
+    print()
+
 
 def main():
     print("Welcome!")
@@ -196,6 +255,10 @@ def main():
             do_examine(args)
         elif command == "l" or command == "look":
             do_look()
+        elif command == "t" or command == "take" or command == "grab":
+            do_take(args)
+        elif command == "i" or command == "inventory":
+            do_inventory()
         else:
             error("No such command.")
             continue
