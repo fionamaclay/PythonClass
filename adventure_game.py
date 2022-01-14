@@ -1,4 +1,5 @@
-"""Start on 8.1 for next time."""
+"""Start adding locations from the workd map into the """
+""" PLACES dict and figure out inventory issues w part 8 for next time"""
 
 from console import fg
 from console import bg
@@ -42,6 +43,12 @@ PLACES = {
         "name": "The Town Square" ,
         "west": "home" ,
         "description": "The hustlin' and bustlin' meeting place for the town." ,
+    },
+    "market": {
+        "key": "market" ,
+        "name": "The Market" ,
+        "south": "town-square" ,
+        "description": "The town market where you can go to shop for items." ,
     },
 }
 
@@ -229,6 +236,30 @@ def do_inventory():
         
     print()
 
+def do_drop(args):
+    debug(f"Trying to drop {args}.")
+
+    if not args:
+        error("What would you like to drop?")
+        return
+
+    name = args[0].lower()
+
+    if name not in PLAYER["inventory"] or not PLAYER["inventory"][name]:
+        error(f"You do not have any {name}.")
+        return
+
+    PLAYER["inventory"][name] - 1
+
+    if not PLAYER["inventory"][name]:
+        PLAYER["inventory"].pop(name)
+
+    place_name = PLAYER.get("place")
+    place = PLACES.get(place_name)
+
+    place.setdefault("items", [])
+
+    place["items"].append(name)
 
 def main():
     print("Welcome!")
@@ -259,6 +290,8 @@ def main():
             do_take(args)
         elif command == "i" or command == "inventory":
             do_inventory()
+        elif command == "drop":
+            do_drop(args)
         else:
             error("No such command.")
             continue
