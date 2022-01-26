@@ -1,4 +1,4 @@
-"""Finished 9.2, add a do_read function to read passage from the book for next time"""
+"""Add the message from 8.2, pick back up with 9.3 B for next time"""
 
 from console import fg
 from console import bg
@@ -109,6 +109,8 @@ ITEMS = {
         "name": "Book" ,
         "description": "A leather-bound book open to an interesting passage..." ,
         "can_take": True ,
+        "can_read": True ,
+        "passage": "The rainbow is fading, with dissipating hues. \nYour journey will be arduous, like the fierce ocean blue. \nYou may be triumphant, and rest again in your bed, \nhowever first you must bargain with the dog with three heads." ,
     },
 }
 
@@ -214,7 +216,7 @@ def do_take(args):
     debug(f"Trying to take {args}.")
     
     if not args:
-        error("Which way do you want to go?")
+        error("What would you like to take?")
         return
 
     place = get_place()
@@ -280,8 +282,37 @@ def do_drop(args):
 
     place["items"].append(name)
 
-def do_read():
-    ...
+def do_read(args):
+    """To read something"""
+    if not args:
+        error("What would you like to read?")
+        return
+
+    place = get_place()
+
+    name = args[0].lower()
+
+    if name not in place.get("items" , []):
+        error(f"Sorry, I don't see a {name} to read here.")
+        return
+
+    item = ITEMS.get(name)
+
+    if not item:
+        abort(f"Whoops! The information about {name} seems to be missing.")
+
+    if not item.get('can_read'):
+        error(f"It seems you cannot read {item['name']}.")
+        return
+
+    if item.get('can_read'):
+        text = item.get('passage')
+        lines = text.splitlines()
+
+        header("It reads: ")
+
+        for line in lines:
+            wrap(line)
 
 def get_place(key=None):
     if not key:
@@ -293,6 +324,13 @@ def get_place(key=None):
         abort(f"Woops! The information about {key} seems to be missing.")
     
     return place
+
+def get_item(key):
+    item = ITEMS.get(key)
+
+    if not item:
+        abort(f"Whoops! The information about {key} seems to be missing.")
+        return item
 
 def abort(message):
     """To send an error message and exit the program when there is an issue in the code"""
@@ -330,6 +368,8 @@ def main():
             do_inventory()
         elif command == "drop":
             do_drop(args)
+        elif command == "read" or command == "r":
+            do_read(args)
         else:
             error("No such command.")
             continue
