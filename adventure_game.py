@@ -1,4 +1,4 @@
-"""Add the message from 8.2, pick back up with 9.3 B for next time"""
+"""Add the message from 8.2, pick back up with 9.4 C for next time"""
 
 from console import fg
 from console import bg
@@ -169,10 +169,8 @@ def do_examine(args):
     if name not in place.get("items", []) and name not in PLAYER["inventory"]:
         error(f"Sorry, I don't know what {name} is.")
         return
-    elif name not in ITEMS:
-        abort(f"Whoops! The information about {name} seems to be missing.")
 
-    item = ITEMS[name]
+    item = get_item(name)
 
     header(item["name"])
     wrap(item["description"])
@@ -192,7 +190,7 @@ def do_look():
     if items:
         names = []
         for key in items:
-            item = ITEMS.get(key)
+            item = get_item(key)
             names.append(item["name"])
         last = names.pop()
         text = ", ".join(names)
@@ -227,10 +225,7 @@ def do_take(args):
         error(f"Sorry, I don't see a {name} here.")
         return
 
-    item = ITEMS.get(name)
-
-    if not item:
-        abort(f"Whoops! The information about {name} seems to be missing.")
+    item = get_item(name)
 
     if not item.get('can_take'):
         wrap(f"You try to pick up {item['name']}, but you find your muscles to be too feeble to lift it!")
@@ -252,7 +247,7 @@ def do_inventory():
         return
 
     for name , qty in PLAYER["inventory"].items():
-        item = ITEMS.get(name)
+        item = get_item(name)
         write(f"{item['name']}: {qty}")
         
     print()
@@ -267,12 +262,12 @@ def do_drop(args):
 
     name = args[0].lower()
 
-    if name not in PLAYER["inventory"] or not PLAYER["inventory"][name]:
+    if not player_has(name):
         error(f"You do not have any {name}.")
         return
-
-    PLAYER["inventory"][name] - 1
-
+    
+    PLAYER["inventory"][name] = PLAYER["inventory"][name] - 1
+    
     if not PLAYER["inventory"][name]:
         PLAYER["inventory"].pop(name)
 
@@ -296,7 +291,7 @@ def do_read(args):
         error(f"Sorry, I don't see a {name} to read here.")
         return
 
-    item = ITEMS.get(name)
+    item = get_item(name)
 
     if not item:
         abort(f"Whoops! The information about {name} seems to be missing.")
@@ -327,10 +322,18 @@ def get_place(key=None):
 
 def get_item(key):
     item = ITEMS.get(key)
-
+    
     if not item:
         abort(f"Whoops! The information about {key} seems to be missing.")
-        return item
+        return
+    
+    return item
+
+def player_has(key, qty=1):
+    if key in PLAYER["inventory"] and PLAYER["inventory"][key] >= qty:
+        return True
+    else:
+        return False
 
 def abort(message):
     """To send an error message and exit the program when there is an issue in the code"""
