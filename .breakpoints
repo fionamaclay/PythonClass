@@ -4,7 +4,7 @@
       {
         "id": "7e994588-5c63-4bb3-a1bf-f93e31f3a842",
         "line": 332,
-        "version": 9700,
+        "version": 9713,
         "index": 8243
       }
     ],
@@ -14,6 +14,14 @@
         "line": 143,
         "version": 4183,
         "index": 3719
+      }
+    ],
+    "paths_lesson.py": [
+      {
+        "id": "84097b81-da4e-4cc1-b4ec-26b5aa17fdb4",
+        "line": 19,
+        "version": 1732,
+        "index": 711
       }
     ]
   }
