@@ -40,6 +40,18 @@ def main_two():
     
     print(contents)
 
+def print_contents():
+    path = Path(__file__).parent / "scores.txt"
+
+    with open(path) as fh:
+        contents = fh.read()
+
+    print(f"~~~ {path.stem.upper()} ~~~")
+    print(contents)
+
 
 main()
+print("-----------------------------------")
 main_two()
+print("-----------------------------------")
+print_contents()

@@ -39,3 +39,5 @@ for pet in pets:
     feed(pet)
     print()
     exercise(pet)
+
+path = Path("hello.py")
