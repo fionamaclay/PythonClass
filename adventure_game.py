@@ -118,7 +118,7 @@ def do_shop():
     """ To list items for sale """
     header(f'{fg.blue("Items for Sale!")}')
     for item in ITEMS.values():
-        if "price" not in item:
+        if not is_for_sale(item):
             continue
         write(f"{item['name']}: {item['description']}")
     
@@ -166,7 +166,7 @@ def do_examine(args):
 
     name = args[0].lower()
 
-    if name not in place.get("items", []) and name not in PLAYER["inventory"]:
+    if not place_has(name) and not player_has(name):
         error(f"Sorry, I don't know what {name} is.")
         return
 
@@ -221,7 +221,7 @@ def do_take(args):
 
     name = args[0].lower()
 
-    if name not in place.get("items" , []):
+    if not place_has(name):
         error(f"Sorry, I don't see a {name} here.")
         return
 
@@ -231,8 +231,7 @@ def do_take(args):
         wrap(f"You try to pick up {item['name']}, but you find your muscles to be too feeble to lift it!")
         return
     
-    PLAYER["inventory"].setdefault(name , 0)
-    PLAYER["inventory"][name] += 1
+    inventory_change(name)
     place["items"].remove(name)
 
     wrap(f"You pick up {item['name']} and put it in your pack.")
@@ -266,16 +265,16 @@ def do_drop(args):
         error(f"You do not have any {name}.")
         return
     
-    PLAYER["inventory"][name] = PLAYER["inventory"][name] - 1
-    
-    if not PLAYER["inventory"][name]:
-        PLAYER["inventory"].pop(name)
+    qty = PLAYER["inventory"][name]
+    inventory_change(name, -qty)
 
     place = get_place()
 
     place.setdefault("items", [])
 
     place["items"].append(name)
+    
+    wrap(f"You set down {name}.")
 
 def do_read(args):
     """To read something"""
@@ -329,8 +328,29 @@ def get_item(key):
     
     return item
 
+def is_for_sale(item):
+    if "price" in item:
+        return True
+    else:
+        return False
+
+def inventory_change(key, quantity=1):
+    PLAYER["inventory"].setdefault(key, 0)
+
+    PLAYER["inventory"][key] = PLAYER["inventory"][key] + quantity
+
+    if not PLAYER["inventory"][key] or PLAYER["inventory"][key] <= 0:
+        PLAYER["inventory"].pop(key)
+
 def player_has(key, qty=1):
     if key in PLAYER["inventory"] and PLAYER["inventory"][key] >= qty:
+        return True
+    else:
+        return False
+
+def place_has(item):
+    place = get_place()
+    if item in place.get("items", []):
         return True
     else:
         return False
@@ -403,4 +423,5 @@ def header(title):
 
 if __name__ == "__main__":
     main()
+    
 
