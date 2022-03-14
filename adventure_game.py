@@ -1,4 +1,4 @@
-"""Add the message from 8.2, pick back up with 9.4 C for next time"""
+"""Pick back up with 9.6 place_add function for next time"""
 
 from console import fg
 from console import bg
