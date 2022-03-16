@@ -1,4 +1,4 @@
-"""Pick back up with 9.6 place_add function for next time"""
+"""Pick back up with 10.4 A #2, string formatting for next time"""
 
 from console import fg
 from console import bg
