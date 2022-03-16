@@ -26,7 +26,9 @@ DEBUG = False
 
 PLAYER = {
     "place": "home" ,
-    "inventory": {} ,
+    "inventory": {
+        "gems": 50 ,
+    } ,
 }
 
 PLACES = {
@@ -51,6 +53,8 @@ PLACES = {
         "name": "The Market" ,
         "south": "town-square" ,
         "description": "The market is where you can go to shop for items relevant to your quest." ,
+        "items": ["potion" , "sword" , "pillow"] ,
+        "can": ["shop" , "buy"]
     },
     "bakery": {
         "key": "bakery" ,
@@ -112,15 +116,28 @@ ITEMS = {
         "can_read": True ,
         "passage": "The rainbow is fading, with dissipating hues. \nYour journey will be arduous, like the fierce ocean blue. \nYou may be triumphant, and rest again in your bed, \nhowever first you must bargain with the dog with three heads." ,
     },
+    "gems": {
+        "key": "gems" ,
+        "name": "Gems" ,
+        "description": "The currency used to buy things" ,
+    }
 }
 
 def do_shop():
     """ To list items for sale """
+    if not place_can("shop"):
+        error("Sorry, you can't shop here.")
+        return
+    
+    place = get_place()
+   
     header(f'{fg.blue("Items for Sale!")}')
-    for item in ITEMS.values():
+
+    for key in place.get("items", []):
+        item = get_item(key)
         if not is_for_sale(item):
             continue
-        write(f"{item['name']}: {item['description']}")
+        write(f"{item['name']}: {item['description']} {abs(item['price'])}")
     
 def do_quit():
     """ To exit the game """
@@ -232,7 +249,7 @@ def do_take(args):
         return
     
     inventory_change(name)
-    place["items"].remove(name)
+    place_remove(name)
 
     wrap(f"You pick up {item['name']} and put it in your pack.")
 
@@ -268,11 +285,7 @@ def do_drop(args):
     qty = PLAYER["inventory"][name]
     inventory_change(name, -qty)
 
-    place = get_place()
-
-    place.setdefault("items", [])
-
-    place["items"].append(name)
+    place_add(name)
     
     wrap(f"You set down {name}.")
 
@@ -307,6 +320,41 @@ def do_read(args):
 
         for line in lines:
             wrap(line)
+
+def do_buy(args):
+    debug(f"Trying to buy {args}.")
+
+    if not place_can("buy"):
+        error("Sorry, you can't buy things here.")
+        return
+
+    if not args:
+        error("What would you like to buy?")
+        return
+
+    name = args[0].lower()
+
+    if not place_has(name):
+        error(f"Sorry, I don't see a {name} here.")
+        return
+
+    item = get_item(name)
+    if not is_for_sale(item):
+        error(f"Sorry, {name} is not for sale.")
+        return
+
+    price = abs(item["price"])
+    if not player_has("gems", price):
+        gems = PLAYER["inventory"].get("gems", 0)
+        error(f"Sorry, you can't afford {name} because you only have {gems}.")
+        return
+
+    inventory_change("gems", -price)
+    inventory_change(name)
+
+    place_remove(name)
+
+    write(f"You bought {name}.")
 
 def get_place(key=None):
     if not key:
@@ -355,6 +403,27 @@ def place_has(item):
     else:
         return False
 
+def place_add(key):
+    place = get_place()
+    place.setdefault("items", [])
+
+    if key not in place["items"]:
+        place["items"].append(key)
+
+def place_remove(key):
+    place = get_place()
+
+    if key in place.get("items", []):
+        place["items"].remove(key)
+
+def place_can(action):
+    place = get_place()
+
+    if action in place.get("can", []):
+        return True
+    else:
+        return False
+
 def abort(message):
     """To send an error message and exit the program when there is an issue in the code"""
     error(message)
@@ -393,6 +462,8 @@ def main():
             do_drop(args)
         elif command == "read" or command == "r":
             do_read(args)
+        elif command == "buy":
+            do_buy(args)
         else:
             error("No such command.")
             continue
